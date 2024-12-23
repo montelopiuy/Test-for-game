@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gacha Blox Fruits</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .roll-button, .store-button {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .roll-button:hover, .store-button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            display: none;
+        }
+        .suspense {
+            font-size: 2em;
+            font-weight: bold;
+            color: #555;
+            animation: typing 2s steps(20) infinite;
+            font-family: monospace;
+        }
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 80%;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        .legendary { color: #FFD700; }
+        .rare { color: #4CAF50; }
+        .uncommon { color: #2196F3; }
+        .common { color: #FF5722; }
+        #store {
+            margin-top: 30px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gacha Blox Fruits</h1>
+    <p>Cliquez sur le bouton pour rouler un fruit aléatoire !</p>
+    <button class="roll-button" onclick="rollFruit()">Rouler un Fruit</button>
+    <button class="store-button" onclick="toggleStore()">Voir le Store</button>
+    
+    <div id="suspense" class="suspense"></div>
+    <div class="result" id="result"></div>
+    
+    <div id="store">
+        <h2>Fruits obtenus</h2>
+        <table id="store-table">
+            <thead>
+                <tr>
+                    <th>Fruit</th>
+                    <th>Rareté</th>
+                </tr>
+            </thead>
+            <tbody id="store-content"></tbody>
+        </table>
+    </div>
+
+    <h2>Tableau des Raretés</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Catégorie</th>
+                <th>Fruits</th>
+                <th>Chance Totale (%)</th>
+            </tr>
+        </thead>
+        <tbody id="rarity-table"></tbody>
+    </table>
+
+    <script>
+        const fruits = [
+            { name: "Dragon", rarity: 1, category: "legendary" },
+            { name: "Venom", rarity: 1, category: "legendary" },
+            { name: "Control", rarity: 1, category: "legendary" },
+            { name: "Soul", rarity: 1, category: "legendary" },
+            { name: "Kitsune", rarity: 1, category: "legendary" },
+            { name: "Dough", rarity: 2, category: "rare" },
+            { name: "Shadow", rarity: 2, category: "rare" },
+            { name: "Gas Gas", rarity: 2, category: "rare" },
+            { name: "Gravity", rarity: 2, category: "rare" },
+            { name: "Phoenix", rarity: 2, category: "rare" },
+            { name: "Buddha", rarity: 4, category: "uncommon" },
+            { name: "String", rarity: 4, category: "uncommon" },
+            { name: "Paw", rarity: 4, category: "uncommon" },
+            { name: "Rumble", rarity: 4, category: "uncommon" },
+            { name: "Light", rarity: 6, category: "uncommon" },
+            { name: "Ice", rarity: 6, category: "uncommon" },
+            { name: "Flame", rarity: 8, category: "common" },
+            { name: "Dark", rarity: 8, category: "common" },
+            { name: "Sand", rarity: 8, category: "common" },
+            { name: "Smoke", rarity: 8, category: "common" },
+            { name: "Bomb", rarity: 12, category: "common" },
+            { name: "Kilo", rarity: 16, category: "common" },
+            { name: "Spin", rarity: 16, category: "common" },
+            { name: "Chop", rarity: 18, category: "common" }
+        ];
+
+        const totalWeight = fruits.reduce((acc, fruit) => acc + fruit.rarity, 0);
+        fruits.forEach(fruit => {
+            fruit.percentage = ((fruit.rarity / totalWeight) * 100).toFixed(2);
+        });
+
+        let ownedFruits = JSON.parse(localStorage.getItem('ownedFruits')) || [];
+
+        function rollFruit() {
+            const suspenseElement = document.getElementById("suspense");
+            const resultElement = document.getElementById("result");
+
+            suspenseElement.innerText = "Recherche d'un fruit...";
+            suspenseElement.style.display = "block";
+            resultElement.style.display = "none";
+
+            let randomNum = Math.random() * totalWeight;
+            let chosenFruit;
+            for (let fruit of fruits) {
+                if (randomNum < fruit.rarity) {
+                    chosenFruit = fruit;
+                    break;
+                }
+                randomNum -= fruit.rarity;
+            }
+
+            setTimeout(() => {
+                suspenseElement.style.display = "none";
+                resultElement.style.display = "block";
+                resultElement.innerHTML = `Vous avez obtenu : <span class="${chosenFruit.category}">${chosenFruit.name}</span> (${chosenFruit.percentage}%)`;
+                resultElement.className = `result ${chosenFruit.category}`;
+                if (!ownedFruits.some(fruit => fruit.name === chosenFruit.name)) {
+                    ownedFruits.push(chosenFruit);
+                    localStorage.setItem('ownedFruits', JSON.stringify(ownedFruits));
+                }
+            }, 3000);
+        }
+
+        function toggleStore() {
+            const store = document.getElementById("store");
+            const storeContent = document.getElementById("store-content");
+            store.style.display = store.style.display === "block" ? "none" : "block";
+            storeContent.innerHTML = "";
+
+            ownedFruits.forEach(fruit => {
+                const row = `
+                    <tr>
+                        <td>${fruit.name}</td>
+                        <td class="${fruit.category}">${fruit.category.charAt(0).toUpperCase() + fruit.category.slice(1)}</td>
+                    </tr>
+                `;
+                storeContent.innerHTML += row;
+            });
+        }
+
+        const rarityTable = document.getElementById("rarity-table");
+        const rarityCategories = ["legendary", "rare", "uncommon", "common"];
+        rarityCategories.forEach(category => {
+            const fruitsInCategory = fruits.filter(fruit => fruit.category === category);
+            const totalPercentage = fruitsInCategory.reduce((acc, fruit) => acc + parseFloat(fruit.percentage), 0).toFixed(2);
+            const fruitNames = fruitsInCategory.map(fruit => fruit.name).join(", ");
+            const row = `
+                <tr>
+                    <td class="${category}">${category.charAt(0).toUpperCase() + category.slice(1)}</td>
+                    <td>${fruitNames}</td>
+                    <td>${totalPercentage}%</td>
+                </tr>
+            `;
+            rarityTable.innerHTML += row;
+        });
+    </script>
+</body>
+</html>
